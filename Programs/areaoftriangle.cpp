@@ -6,18 +6,16 @@ public:
     double base;
     double height;
 
-    double Area(double base,double height){
-        double area = 0.5 * base * height;
-        return area;
+    double area() {
+        return 0.5 * base * height;
     }
 };
 
 int main() {
     Triangle t1;
-    double x,y;
     cout << "Base-" << endl;
-    cin >> x;
+    cin >> t1.base;
     cout << "Height-" << endl;
-    cin >> y;
-    cout << t1.Area(x,y);
+    cin >> t1.height;
+    cout << t1.area();
 }
