@@ -36,6 +36,6 @@ int main(){
     do{
         Land person();
     }
-    while(  );
+    while();
     return 0;
 }
