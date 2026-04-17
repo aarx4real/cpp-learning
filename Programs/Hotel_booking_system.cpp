@@ -5,11 +5,19 @@
 #include <algorithm>
 using namespace std;
 
-// ================= TEMPLATE =================
+// ================= TEMPLATE FUNCTION =================
 template <typename T>
 T calculateTotal(T a, T b) {
     return a + b;
 }
+
+// ================= USER-DEFINED EXCEPTION =================
+class RoomException {
+public:
+    void showError() {
+        cout << "No rooms available!" << endl;
+    }
+};
 
 // ================= SERVICE CLASS =================
 class Service {
@@ -22,7 +30,7 @@ public:
         cost = c;
     }
 
-    double getCost() const {
+    double getCost() {
         return cost;
     }
 
@@ -32,11 +40,11 @@ public:
 
     // Operator Overloading
     Service operator+(Service s) {
-        return Service("Combined Service", cost + s.cost);
+        return Service("Combined", cost + s.cost);
     }
 };
 
-// ================= ROOM BASE CLASS =================
+// ================= ABSTRACT ROOM =================
 class Room {
 protected:
     int roomNumber;
@@ -63,7 +71,7 @@ public:
         isOccupied = r.isOccupied;
     }
 
-    virtual double calculatePrice(int days) = 0; // Pure Virtual
+    virtual double calculatePrice(int days) = 0;
 
     void checkIn() {
         isOccupied = true;
@@ -77,18 +85,17 @@ public:
         return isOccupied;
     }
 
-    int getRoomNumber() {
+    // Inline function
+    inline int getRoomNumber() {
         return roomNumber;
     }
 
     virtual void displayType() = 0;
 
-    virtual ~Room() {
-        // Destructor
-    }
+    virtual ~Room() {}
 };
 
-// ================= DERIVED ROOMS =================
+// ================= DERIVED CLASSES =================
 class SingleRoom : public Room {
 public:
     SingleRoom(int num) : Room(num, 1000) {}
@@ -98,7 +105,7 @@ public:
     }
 
     void displayType() {
-        cout << "Single Room";
+        cout << "Single";
     }
 };
 
@@ -111,7 +118,7 @@ public:
     }
 
     void displayType() {
-        cout << "Double Room";
+        cout << "Double";
     }
 };
 
@@ -124,7 +131,7 @@ public:
     }
 
     void displayType() {
-        cout << "Deluxe Room";
+        cout << "Deluxe";
     }
 };
 
@@ -137,7 +144,7 @@ public:
     }
 
     void displayType() {
-        cout << "Suite Room";
+        cout << "Suite";
     }
 };
 
@@ -177,7 +184,12 @@ public:
         services.push_back(s);
     }
 
+    // Method Overloading
     double calculateBill() {
+        return calculateBill(0);
+    }
+
+    double calculateBill(double extraCharge) {
         double roomCost = room->calculatePrice(days);
         double serviceCost = 0;
 
@@ -185,13 +197,17 @@ public:
             serviceCost += s.getCost();
         }
 
-        totalBill = calculateTotal(roomCost, serviceCost);
+        totalBill = calculateTotal(roomCost, serviceCost + extraCharge);
         return totalBill;
     }
 
     void displayBill() {
         customer.display();
         cout << "Room No: " << room->getRoomNumber() << endl;
+
+        cout << "Room Type: ";
+        room->displayType(); // polymorphism
+        cout << endl;
 
         cout << "Services:\n";
         for (auto s : services) {
@@ -204,7 +220,15 @@ public:
     Room* getRoom() {
         return room;
     }
+
+    // Friend Function
+    friend void showBooking(Booking b);
 };
+
+// Friend function
+void showBooking(Booking b) {
+    cout << "Room booked: " << b.room->getRoomNumber() << endl;
+}
 
 // ================= HOTEL =================
 class Hotel {
@@ -214,7 +238,6 @@ class Hotel {
 
 public:
     Hotel() {
-        // Create rooms
         rooms.push_back(new SingleRoom(101));
         rooms.push_back(new DoubleRoom(102));
         rooms.push_back(new DeluxeRoom(103));
@@ -226,12 +249,15 @@ public:
     }
 
     Room* findAvailableRoom() {
-        for (auto r : rooms) {
-            if (!r->getStatus()) {
-                return r;
-            }
+        auto it = find_if(rooms.begin(), rooms.end(), [](Room* r) {
+            return !r->getStatus();
+        });
+
+        if (it == rooms.end()) {
+            throw RoomException();
         }
-        throw "No rooms available!";
+
+        return *it;
     }
 
     void bookRoom() {
@@ -242,7 +268,7 @@ public:
         cin >> name;
         cout << "Enter ID: ";
         cin >> id;
-        cout << "Enter number of days: ";
+        cout << "Enter days: ";
         cin >> days;
 
         try {
@@ -250,14 +276,20 @@ public:
             Customer c(name, id);
 
             Booking b(c, r, days);
-            bookings.push_back(b);
 
+            // Add sample services
+            b.addService(Service("Food", 500));
+            b.addService(Service("Laundry", 200));
+
+            b.calculateBill();
+
+            bookings.push_back(b);
             r->checkIn();
 
-            cout << "Room booked successfully! Room No: " << r->getRoomNumber() << endl;
+            showBooking(b);
 
-        } catch (const char* msg) {
-            cout << msg << endl;
+        } catch (RoomException e) {
+            e.showError();
         }
     }
 
@@ -276,11 +308,23 @@ public:
     }
 
     void showRooms() {
-        for (auto r : rooms) {
+        for_each(rooms.begin(), rooms.end(), [](Room* r) {
             cout << "Room " << r->getRoomNumber() << " - ";
             r->displayType();
             cout << " - ";
             cout << (r->getStatus() ? "Occupied" : "Available") << endl;
+        });
+
+        int occupied = count_if(rooms.begin(), rooms.end(), [](Room* r) {
+            return r->getStatus();
+        });
+
+        cout << "Total Occupied Rooms: " << occupied << endl;
+    }
+
+    ~Hotel() {
+        for (auto r : rooms) {
+            delete r;
         }
     }
 };
@@ -291,7 +335,7 @@ int main() {
     int choice;
 
     do {
-        cout << "\n===== HOTEL MANAGEMENT SYSTEM =====\n";
+        cout << "\n===== HOTEL SYSTEM =====\n";
         cout << "1. Book Room\n";
         cout << "2. Check Out\n";
         cout << "3. Show Rooms\n";
@@ -310,10 +354,10 @@ int main() {
                 hotel.showRooms();
                 break;
             case 4:
-                cout << "Exiting...\n";
+                cout << "Thank you!\n";
                 break;
             default:
-                cout << "Invalid choice!\n";
+                cout << "Invalid choice\n";
         }
 
     } while (choice != 4);
