@@ -1,5 +1,6 @@
 //Single level inheritance : Parent -> Child
 //Multi level inheritance : Parent -> Parent -> Child
+//Multi level inheritance : Parent, Parent -> Child
 
 /* inheritance - when the properties and member funntions
 of the base class are passed on to the derived class*/
