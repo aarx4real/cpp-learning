@@ -18,17 +18,30 @@ public:
     Student(string name, int age, int rollno) : Person(name,age){
         this->rollno=rollno;
     }
+    void display(){
+        cout<<name<<endl;
+        cout<<age<<endl;
+        cout<<rollno<<endl;
+    }
 };
 
 class Teacher : public Person{
+public:
     string subject;
-    Teacher(string name, int age, int rollno) : Person(name,age){
+    Teacher(string name, int age, string subject) : Person(name,age){
         this->subject=subject;
+    }
+        void display(){
+        cout<<name<<endl;
+        cout<<age<<endl;
+        cout<<subject<<endl;
     }
 };
 
 int main(){
     Student s1("Aarush",18,812);
     Teacher t1("Aarush",18,"Subject computer science");
+    s1.display();
+    t1.display();
     return 0;
 }
