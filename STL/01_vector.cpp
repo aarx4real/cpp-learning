@@ -2,6 +2,10 @@
 #include <vector>
 using namespace std;
 
+//  A vector in C++ is a container in the STL that stores
+//  elements in a dynamic array, allowing the size to grow
+//  or shrink automatically.
+
 int main(){
     vector<int> vec; //Size=0,Capacity=0;
 
