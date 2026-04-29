@@ -20,5 +20,11 @@ int main(){
     for(int i : vec){
         cout << i << " ";
     }
+
+    cout << "The element at index 2 is " << vec[2] << endl;             //vec.[x] - to access the xth index element or vector
+    cout << "The element at index 2 is " << vec.at(2) << endl;          //vec.at(x) - to access the xth index element or vector
+    
+    cout<<"First element " << vec.front() << endl;          //vec.front() - returns the first element
+    cout<<"Last element " << vec.back() << endl;            //vec.back() - returns the last element
     return 0;
 }
